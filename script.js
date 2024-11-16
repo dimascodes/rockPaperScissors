@@ -1,83 +1,73 @@
-let notify = "this game a play in 5 round.";
-alert(notify);
-
-
-const getComputerChoice = () => {
-    const random = Math.floor(Math.random() * 3); // Generates 0, 1, or 2
-
-    if (random === 0) {
-        return "rock";
-    }else if (random === 1) {
-        return "paper";
-    } else {
-        return "scissors";
-    }
-    
-}
-
-
-
-const getHumanChoice = () => {
-   const userInput = (prompt("choose rock, paper, or scissors : "));
-   return userInput.toLowerCase();
-}
-
-
+// Game state
 let humanScore = 0;
 let computerScore = 0;
+const winningScore = 5;
 
-const playRound = (humanChoice, computerChoice) => {
-    humanChoice = humanChoice.toLowerCase();// Ensure case-insensitivity
+// DOM elements
+const buttonsContainer = document.getElementById('buttons-container');
+const resultDiv = document.getElementById('result');
+const gameOverDiv = document.getElementById('game-over');
+const humanScoreSpan = document.getElementById('human-score');
+const computerScoreSpan = document.getElementById('computer-score');
 
-    if (humanChoice === computerChoice ) {
-        alert("it's a tie !");
-    }else if( (humanChoice === "rock" && computerChoice === "scissors" ) ||
-                (humanChoice === "paper" && computerChoice === "rock") || 
-                (humanChoice === "scissors" && computerChoice === "paper") )
-    {
+// Create buttons
+const choices = ['rock', 'paper', 'scissors'];
+choices.forEach(choice => {
+    const button = document.createElement('button');
+    button.textContent = choice.charAt(0).toUpperCase() + choice.slice(1);
+    button.addEventListener('click', () => playRound(choice));
+    buttonsContainer.appendChild(button);
+});
+
+// Game functions
+const getComputerChoice = () => {
+    const randomIndex = Math.floor(Math.random() * choices.length);
+    return choices[randomIndex];
+};
+
+const updateScore = () => {
+    humanScoreSpan.textContent = humanScore;
+    computerScoreSpan.textContent = computerScore;
+};
+
+const displayResult = (message) => {
+    resultDiv.textContent = message;
+};
+
+const disableButtons = () => {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => button.disabled = true);
+};
+
+const checkGameOver = () => {
+    if (humanScore === winningScore || computerScore === winningScore) {
+        const winner = humanScore === winningScore ? 'You win the game!' : 'Computer wins the game!';
+        gameOverDiv.textContent = winner;
+        disableButtons();
+        return true;
+    }
+    return false;
+};
+
+const playRound = (humanChoice) => {
+    if (checkGameOver()) return;
+
+    const computerChoice = getComputerChoice();
+
+    if (humanChoice === computerChoice) {
+        displayResult("It's a tie!");
+    } else if (
+        (humanChoice === "rock" && computerChoice === "scissors") ||
+        (humanChoice === "paper" && computerChoice === "rock") ||
+        (humanChoice === "scissors" && computerChoice === "paper")
+    ) {
         humanScore++;
-        alert(`you win!! ${humanChoice} beats ${computerChoice}`);
+        displayResult(`You win! ${humanChoice} beats ${computerChoice}`);
     } else {
         computerScore++;
-        alert(`you lose! ${computerChoice} beats ${humanChoice}`);
-
-    };
-
-
-}
-
-const playGame = () => {
-    // Reset scores before starting a new game
-    humanScore = 0;
-    computerScore = 0;
-
-    const totalRounds = 5;
-
-    for (let i = 0; i < totalRounds; i++) {
-        const humanSelection = getHumanChoice();
-        const computerSelection = getComputerChoice();
-        playRound(humanSelection, computerSelection);
-
-        // Calculate rounds remaining
-        const currentRound = i + 1;
-        const roundsRemaining = totalRounds - currentRound;
-
-        // Show alert after each round
-        if (roundsRemaining > 0) {
-            alert(`Games round ${currentRound}, ${roundsRemaining} games remaining`);
-        } else {
-            alert(`Final round completed!`);
-        }
+        displayResult(`You lose! ${computerChoice} beats ${humanChoice}`);
     }
 
-    // Announce the overall winner
-    if (humanScore > computerScore) {
-        alert(`WINNNERR!! final score: Human ${humanScore}, Computer ${computerScore}`)
-    }else if (humanScore < computerScore) {
-        alert(`LOOSEERR!! final score: Human ${humanScore}, Commputer ${computerScore} `)
-    } else {
-        alert(`TIE!! Final score: Human ${humanScore}, COmputer ${computerScore}`)
-    }
-}
-
-playGame();
+    updateScore();
+    checkGameOver();
+};
